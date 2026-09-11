@@ -82,12 +82,22 @@ class RolloutEngine:
         top_p: float = 0.95,
     ) -> RolloutResult:
         raw = self.model.module if isinstance(self.model, DistributedDataParallel) else self.model
-        pad_id = self.tokenizer.pad_token_id or self.tokenizer.eos_token_id
+        pad_id = self.tokenizer.pad_token_id if self.tokenizer.pad_token_id is not None else self.tokenizer.eos_token_id
         eos_id = self.tokenizer.eos_token_id
 
         rep_ids  = prompt_ids.repeat_interleave(num_generations, dim=0)
         rep_mask = attention_mask.repeat_interleave(num_generations, dim=0)
         prompt_lens = rep_mask.sum(dim=1)
+
+        # Pad di kanan bikin pad jadi "seliratan" antara prompt dan generation
+        # (model pakai causal mask & abaikan attention_mask) -> geser pad ke kiri.
+        if (rep_mask == 0).any():
+            lens = rep_mask.sum(dim=1)
+            width = rep_ids.size(1)
+            left_ids = torch.full_like(rep_ids, pad_id)
+            for i in range(rep_ids.size(0)):
+                left_ids[i, width - lens[i]:] = rep_ids[i, : lens[i]]
+            rep_ids = left_ids
 
         with self._ctx:
             output_ids = raw.generate(

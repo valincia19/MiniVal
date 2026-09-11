@@ -374,8 +374,8 @@ class MoEFeedForward(nn.Module):
 
         # Load-balancing auxiliary loss
         if self.training and self.aux_coef > 0:
-            load = F.one_hot(topk_idx, self.num_experts).float().mean(0)
-            prob = scores.mean(0)
+            load = F.one_hot(topk_idx, self.num_experts).float().mean(dim=(0, 1))
+            prob = scores.mean(dim=0)
             aux_loss = (load * prob).sum() * self.num_experts * self.aux_coef
         else:
             aux_loss = scores.new_zeros(1).squeeze()
@@ -535,6 +535,8 @@ class MiniValForCausalLM(PreTrainedModel, GenerationMixin):
         self,
         input_ids: torch.Tensor,
         past_key_values: Optional[list] = None,
+        attention_mask: Optional[torch.Tensor] = None,
+        use_cache: bool = True,
         **kwargs,
     ) -> dict:
         first_kv = past_key_values[0] if (isinstance(past_key_values, (list, tuple)) and past_key_values) else None
@@ -543,5 +545,8 @@ class MiniValForCausalLM(PreTrainedModel, GenerationMixin):
         return {
             "input_ids": input_ids,
             "past_key_values": past_key_values,
-            "use_cache": kwargs.get("use_cache", True),
+            "use_cache": use_cache,
+            # Model pakai causal mask murni & pad selalu di BELAKANG sequence,
+            # jadi token real tidak pernah attend ke pad -> aman diabaikan di sini.
+            "attention_mask": attention_mask,
         }

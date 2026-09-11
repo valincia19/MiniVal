@@ -265,7 +265,7 @@ def run_train(args):
     if args.stage == "dpo":
         trainer.fit_dpo(dataset)
     elif args.stage == "grpo":
-        trainer.fit_grpo(dataset, num_generations=args.num_generations)
+        trainer.fit_grpo(dataset, num_generations=args.num_generations, max_new_tokens=args.max_new_tokens)
     elif args.stage == "distill":
         if not args.teacher:
             print(" Stage 'distill' memerlukan argumen --teacher <path/name teacher model>")
@@ -331,6 +331,7 @@ def main():
     p_train.add_argument("--max_samples", default=None, type=int, help="Batasi jumlah sampel data (misal 500 untuk hemat CPU/RAM)")
     p_train.add_argument("--teacher", default=None, type=str, help="Path teacher model (khusus stage=distill)")
     p_train.add_argument("--num_generations", default=4, type=int, help="Rollouts per prompt (khusus stage=grpo)")
+    p_train.add_argument("--max_new_tokens", default=256, type=int, help="Panjang completion max per rollout (khusus grpo)")
 
     args = parser.parse_args()
 
