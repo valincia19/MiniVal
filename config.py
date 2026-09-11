@@ -1,5 +1,5 @@
 """
-MiniVal — Konfigurasi & Preset Model
+MiniVal - Konfigurasi & Preset Model
 ======================================
 Satu tempat untuk semua preset arsitektur dan training config.
 Tidak perlu hafal argumen -- cukup pilih nama preset.
@@ -11,9 +11,7 @@ from dataclasses import dataclass
 from model.model_minival import MiniValConfig
 
 
-# ─────────────────────────────────────────────────────────────
 # Preset Arsitektur
-# ─────────────────────────────────────────────────────────────
 
 @dataclass
 class ModelPresets:
@@ -21,7 +19,7 @@ class ModelPresets:
 
     @staticmethod
     def tiny() -> MiniValConfig:
-        """26M Parameters — super cepat untuk eksperimen lokal & debugging."""
+        """26M Parameters - super cepat untuk eksperimen lokal & debugging."""
         return MiniValConfig(
             hidden_size=512,
             num_hidden_layers=6,
@@ -33,7 +31,7 @@ class ModelPresets:
 
     @staticmethod
     def base() -> MiniValConfig:
-        """108M Parameters — standar untuk pretraining & conversational AI."""
+        """108M Parameters - standar untuk pretraining & conversational AI."""
         return MiniValConfig(
             hidden_size=768,
             num_hidden_layers=8,
@@ -45,7 +43,7 @@ class ModelPresets:
 
     @staticmethod
     def pro() -> MiniValConfig:
-        """~300M Parameters — konfigurasi frontier-grade untuk performa produksi maksimal."""
+        """~300M Parameters - konfigurasi frontier-grade untuk performa produksi maksimal."""
         return MiniValConfig(
             hidden_size=1024,
             num_hidden_layers=14,
@@ -59,7 +57,7 @@ class ModelPresets:
 
     @staticmethod
     def moe() -> MiniValConfig:
-        """MoE (~108M aktif) — hemat komputasi dengan 4 routed experts."""
+        """MoE (~108M aktif) - hemat komputasi dengan 4 routed experts."""
         return MiniValConfig(
             hidden_size=768,
             num_hidden_layers=8,
@@ -91,16 +89,14 @@ class ModelPresets:
     def list(cls) -> dict[str, str]:
         """Daftar semua preset dengan deskripsinya."""
         return {
-            "tiny": "26M params — cepat untuk debugging & laptop tanpa GPU",
-            "base": "108M params — standar untuk dialog & teks umum",
-            "pro": "300M params — konfigurasi frontier (GQA 4x, YaRN 8k-32k, 14 layers)",
-            "moe": "108M params aktif — Mixture of Experts (4 experts, top-1)",
+            "tiny": "26M params - cepat untuk debugging & laptop tanpa GPU",
+            "base": "108M params - standar untuk dialog & teks umum",
+            "pro": "300M params - konfigurasi frontier (GQA 4x, YaRN 8k-32k, 14 layers)",
+            "moe": "108M params aktif - Mixture of Experts (4 experts, top-1)",
         }
 
 
-# ─────────────────────────────────────────────────────────────
 # Konfigurasi Training
-# ─────────────────────────────────────────────────────────────
 
 @dataclass
 class TrainConfig:

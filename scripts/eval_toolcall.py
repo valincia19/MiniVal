@@ -70,7 +70,7 @@ def extract_tool_call(text: str) -> dict | None:
 
 def run_tool_eval(model_path: str = "minival-v1"):
     print("\n" + "=" * 65)
-    print("🛠️ MiniVal Function / Tool Calling Benchmark")
+    print(" MiniVal Function / Tool Calling Benchmark")
     print("=" * 65)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -109,14 +109,14 @@ def run_tool_eval(model_path: str = "minival-v1"):
         if is_correct:
             passed += 1
 
-        status = "✅ PASS" if is_correct else "❌ FAIL"
+        status = " PASS" if is_correct else " FAIL"
         print(f"[{i}/{len(TEST_CASES)}] {status} | Prompt: {test['prompt']}")
         print(f"     Expected : {test['expected_tool']}")
         print(f"     Got      : {tool_call.get('name') if tool_call else 'No valid JSON tool call'}")
         print()
 
     print("=" * 65)
-    print(f"🎯 Skor Akurasi Tool Calling: {passed}/{len(TEST_CASES)} ({passed/len(TEST_CASES)*100:.1f}%)")
+    print(f" Skor Akurasi Tool Calling: {passed}/{len(TEST_CASES)} ({passed/len(TEST_CASES)*100:.1f}%)")
     print("=" * 65 + "\n")
 
 

@@ -25,14 +25,12 @@ if hasattr(sys.stdout, 'reconfigure'):
 # Page Configuration
 st.set_page_config(
     page_title="MiniVal Studio",
-    page_icon="⚡",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# -----------------------------------------------------------------------------
 # SOFT DEVELOPER DARK THEME (LINEAR / CURSOR / SHADCN AESTHETICS)
-# -----------------------------------------------------------------------------
 DEV_THEME_CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
@@ -414,9 +412,7 @@ button[aria-label="Close sidebar"]:hover {
 """
 st.markdown(DEV_THEME_CSS, unsafe_allow_html=True)
 
-# -----------------------------------------------------------------------------
 # LOCALIZATIONS (ID / EN)
-# -----------------------------------------------------------------------------
 I18N = {
     'id': {
         'subtitle': 'Lingkungan Interaktif & Riset Model Bahasa Ringan',
@@ -429,10 +425,10 @@ I18N = {
         'input_placeholder': 'Ketik instruksi, prompt kode, atau pertanyaan untuk MiniVal...',
         'thinking_title': 'Rantai Penalaran (Reasoning Chain)',
         'starters': [
-            ('⚡ Optimasi Kode Python', 'Bantu refactor fungsi pipeline data ini agar hemat memori & lebih cepat.'),
-            ('🧠 Arsitektur RoPE & GQA', 'Jelaskan keuntungan matematis RoPE dibandingkan learned positional embeddings.'),
-            ('📝 Evaluasi Fine-Tuning', 'Jelaskan perbedaan praktis antara SFT, LoRA rank 16, dan DPO alignment.'),
-            ('🛡️ Keamanan Sistem LLM', 'Buat checklist validasi input untuk mencegah Prompt Injection di level API.')
+            (' Optimasi Kode Python', 'Bantu refactor fungsi pipeline data ini agar hemat memori & lebih cepat.'),
+            (' Arsitektur RoPE & GQA', 'Jelaskan keuntungan matematis RoPE dibandingkan learned positional embeddings.'),
+            (' Evaluasi Fine-Tuning', 'Jelaskan perbedaan praktis antara SFT, LoRA rank 16, dan DPO alignment.'),
+            (' Keamanan Sistem LLM', 'Buat checklist validasi input untuk mencegah Prompt Injection di level API.')
         ]
     },
     'en': {
@@ -446,34 +442,32 @@ I18N = {
         'input_placeholder': 'Enter instructions, code prompt, or questions for MiniVal...',
         'thinking_title': 'Reasoning Chain',
         'starters': [
-            ('⚡ Python Code Optimization', 'Refactor this streaming dataset loader to minimize memory footprint.'),
-            ('🧠 RoPE & GQA Architecture', 'Explain why RoPE with YaRN allows long context window extrapolation.'),
-            ('📝 Fine-Tuning Evaluation', 'Compare practical tradeoffs between Full SFT, LoRA rank 16, and DPO.'),
-            ('🛡️ LLM System Security', 'Provide production input sanitization rules against Prompt Injection attacks.')
+            (' Python Code Optimization', 'Refactor this streaming dataset loader to minimize memory footprint.'),
+            (' RoPE & GQA Architecture', 'Explain why RoPE with YaRN allows long context window extrapolation.'),
+            (' Fine-Tuning Evaluation', 'Compare practical tradeoffs between Full SFT, LoRA rank 16, and DPO.'),
+            (' LLM System Security', 'Provide production input sanitization rules against Prompt Injection attacks.')
         ]
     }
 }
 
-# -----------------------------------------------------------------------------
 # SIDEBAR NAVIGATION
-# -----------------------------------------------------------------------------
 with st.sidebar:
     st.markdown(
         """
         <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px; margin-bottom: 4px;">
             <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 18px;">⚡</span>
+                <span style="font-size: 18px;"></span>
                 <span style="font-weight: 700; font-size: 15px; color: #f8fafc; letter-spacing: -0.02em;">MiniVal</span>
                 <span class="dev-badge dev-badge-indigo" style="font-size: 10px; padding: 1px 6px;">v1</span>
             </div>
-            <span class="dev-badge dev-badge-active" style="font-size: 10px; padding: 1px 7px;">● Online</span>
+            <span class="dev-badge dev-badge-active" style="font-size: 10px; padding: 1px 7px;"> Online</span>
         </div>
         """,
         unsafe_allow_html=True
     )
 
     # Modern Segmented Control for Language
-    lang_options = ["🇮🇩 Bahasa Indonesia", "🇬🇧 English"]
+    lang_options = [" Bahasa Indonesia", " English"]
     selected_lang = st.segmented_control(
         "Language",
         lang_options,
@@ -509,7 +503,7 @@ with st.sidebar:
     enable_thinking = st.checkbox(T['thinking_label'], value=False)
 
     st.markdown("---")
-    if st.button(f"🗑️ {T['clear_btn']}", use_container_width=True):
+    if st.button(f" {T['clear_btn']}", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
 
@@ -520,15 +514,13 @@ with st.sidebar:
         f"""
         <div class="hw-box">
             <div class="hw-label">Compute Device</div>
-            <div class="hw-value">🎮 {dev_title}</div>
+            <div class="hw-value"> {dev_title}</div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
-# -----------------------------------------------------------------------------
 # MODEL CACHE & INFERENCE ENGINE
-# -----------------------------------------------------------------------------
 @st.cache_resource(show_spinner=False)
 def load_cached_model(path):
     tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True)
@@ -547,14 +539,12 @@ with st.spinner("Memuat bobot model..."):
         st.error(f"Gagal memuat model: {e}")
         st.stop()
 
-# -----------------------------------------------------------------------------
 # HERO HEADER
-# -----------------------------------------------------------------------------
 st.markdown(
     f"""
     <div class="dev-header">
         <div class="dev-header-left">
-            <h1>⚡ MiniVal Studio</h1>
+            <h1> MiniVal Studio</h1>
             <p>{T['subtitle']}</p>
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
@@ -566,9 +556,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# -----------------------------------------------------------------------------
 # STARTERS & MESSAGE HISTORY
-# -----------------------------------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -619,7 +607,7 @@ for msg in st.session_state.messages:
                     f"""
                     <div class="reasoning-box">
                         <details>
-                            <summary><span>🧠</span> <span>{T['thinking_title']}</span></summary>
+                            <summary><span></span> <span>{T['thinking_title']}</span></summary>
                             <div class="reasoning-content">{safe_think}</div>
                         </details>
                     </div>
@@ -630,11 +618,9 @@ for msg in st.session_state.messages:
                 safe_answer = html.escape(answer_part).replace("\n", "<br>")
                 st.markdown(f'<div class="msg-assistant">{safe_answer}</div>', unsafe_allow_html=True)
             if "speed" in msg and msg["speed"] > 0:
-                st.markdown(f'<div class="telemetry-tag">⚡ {msg["speed"]:.1f} tok/s · {msg.get("time", 0):.2f}s latency</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="telemetry-tag"> {msg["speed"]:.1f} tok/s  {msg.get("time", 0):.2f}s latency</div>', unsafe_allow_html=True)
 
-# -----------------------------------------------------------------------------
 # CHAT INPUT & GENERATION STREAM
-# -----------------------------------------------------------------------------
 if prompt := st.chat_input(T['input_placeholder']):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -684,17 +670,17 @@ if prompt := st.chat_input(T['input_placeholder']):
                 stream_html += f"""
                 <div class="reasoning-box">
                     <details open>
-                        <summary><span>🧠</span> <span>{T['thinking_title']}</span></summary>
-                        <div class="reasoning-content">{safe_think}▌</div>
+                        <summary><span></span> <span>{T['thinking_title']}</span></summary>
+                        <div class="reasoning-content">{safe_think}</div>
                     </details>
                 </div>
                 """
             if answer_part:
                 safe_ans = html.escape(answer_part).replace("\n", "<br>")
-                stream_html += f'<div class="msg-assistant">{safe_ans}▌</div>'
+                stream_html += f'<div class="msg-assistant">{safe_ans}</div>'
             elif not think_part:
                 safe_full = html.escape(full_response).replace("\n", "<br>")
-                stream_html += f'<div class="msg-assistant">{safe_full}▌</div>'
+                stream_html += f'<div class="msg-assistant">{safe_full}</div>'
 
             live_box.markdown(stream_html, unsafe_allow_html=True)
 
@@ -709,7 +695,7 @@ if prompt := st.chat_input(T['input_placeholder']):
             final_html += f"""
             <div class="reasoning-box">
                 <details>
-                    <summary><span>🧠</span> <span>{T['thinking_title']}</span></summary>
+                    <summary><span></span> <span>{T['thinking_title']}</span></summary>
                     <div class="reasoning-content">{safe_think}</div>
                 </details>
             </div>
@@ -717,7 +703,7 @@ if prompt := st.chat_input(T['input_placeholder']):
         display_text = answer_part if answer_part else full_response
         safe_display = html.escape(display_text).replace("\n", "<br>")
         final_html += f'<div class="msg-assistant">{safe_display}</div>'
-        final_html += f'<div class="telemetry-tag">⚡ {speed:.1f} tok/s · {elapsed:.2f}s latency</div>'
+        final_html += f'<div class="telemetry-tag"> {speed:.1f} tok/s  {elapsed:.2f}s latency</div>'
         live_box.markdown(final_html, unsafe_allow_html=True)
 
     # Persist in state

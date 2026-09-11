@@ -1,5 +1,5 @@
 """
-MiniVal — Arsitektur Model Bahasa (Language Model Architecture)
+MiniVal - Arsitektur Model Bahasa (Language Model Architecture)
 ================================================================
 Mendukung Dense dan Sparse Mixture-of-Experts (MoE).
 Kompatibel penuh dengan HuggingFace Transformers & PEFT.
@@ -24,15 +24,13 @@ from transformers.activations import ACT2FN
 from transformers.modeling_outputs import MoeCausalLMOutputWithPast
 
 
-# ─────────────────────────────────────────────────────────────
 # Konfigurasi
-# ─────────────────────────────────────────────────────────────
 
 class MiniValConfig(PretrainedConfig):
     """
     Konfigurasi arsitektur MiniVal.
 
-    Semua hyperparameter model didefinisikan di sini — tidak ada
+    Semua hyperparameter model didefinisikan di sini - tidak ada
     magic number tersebar di seluruh kode.
     """
     model_type = "minival"
@@ -120,9 +118,7 @@ def _yarn_config() -> dict:
     }
 
 
-# ─────────────────────────────────────────────────────────────
 # Komponen Dasar
-# ─────────────────────────────────────────────────────────────
 
 class RMSNorm(nn.Module):
     """
@@ -140,9 +136,7 @@ class RMSNorm(nn.Module):
         return (self.weight * normed).to(x.dtype)
 
 
-# ─────────────────────────────────────────────────────────────
 # RoPE (Rotary Position Embedding) + YaRN
-# ─────────────────────────────────────────────────────────────
 
 class RotaryEmbedding(nn.Module):
     """
@@ -228,9 +222,7 @@ def repeat_kv(x: torch.Tensor, n_rep: int) -> torch.Tensor:
     return x[:, :, :, None, :].expand(B, S, H, n_rep, D).reshape(B, S, H * n_rep, D)
 
 
-# ─────────────────────────────────────────────────────────────
 # Attention
-# ─────────────────────────────────────────────────────────────
 
 class Attention(nn.Module):
     """
@@ -247,7 +239,7 @@ class Attention(nn.Module):
         self.head_dim = config.head_dim
         self.dropout_p = config.dropout
 
-        # Projeksi Q, K, V, O — tanpa bias (standar modern LLM)
+        # Projeksi Q, K, V, O - tanpa bias (standar modern LLM)
         self.q_proj = nn.Linear(config.hidden_size, self.n_heads * self.head_dim, bias=False)
         self.k_proj = nn.Linear(config.hidden_size, self.n_kv_heads * self.head_dim, bias=False)
         self.v_proj = nn.Linear(config.hidden_size, self.n_kv_heads * self.head_dim, bias=False)
@@ -317,9 +309,7 @@ class Attention(nn.Module):
         return out, next_kv
 
 
-# ─────────────────────────────────────────────────────────────
 # Feed-Forward
-# ─────────────────────────────────────────────────────────────
 
 class FeedForward(nn.Module):
     """
@@ -393,9 +383,7 @@ class MoEFeedForward(nn.Module):
         return out.view(B, S, D), aux_loss
 
 
-# ─────────────────────────────────────────────────────────────
 # Transformer Block
-# ─────────────────────────────────────────────────────────────
 
 class MiniValBlock(nn.Module):
     """
@@ -431,9 +419,7 @@ class MiniValBlock(nn.Module):
         return x, next_kv, aux_loss
 
 
-# ─────────────────────────────────────────────────────────────
 # Model Utama
-# ─────────────────────────────────────────────────────────────
 
 class MiniValModel(PreTrainedModel):
     """
@@ -486,7 +472,7 @@ class MiniValModel(PreTrainedModel):
 
 class MiniValForCausalLM(PreTrainedModel, GenerationMixin):
     """
-    MiniVal Causal Language Model — siap untuk Pretraining, SFT, dan Inferensi.
+    MiniVal Causal Language Model - siap untuk Pretraining, SFT, dan Inferensi.
     """
     config_class = MiniValConfig
     _tied_weights_keys = ["lm_head.weight", "model.embed_tokens.weight"]

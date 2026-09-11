@@ -230,7 +230,7 @@ def test_api_schemas():
 
 if __name__ == "__main__":
     print("\n" + "=" * 60)
-    print("🚀 Running MiniVal Full Regression Verification Suite")
+    print(" Running MiniVal Full Regression Verification Suite")
     print("=" * 60)
     test_config()
     test_model_and_moe()
@@ -240,5 +240,5 @@ if __name__ == "__main__":
     test_rollout_logps()
     test_api_schemas()
     print("=" * 60)
-    print("🎉 ALL 7 SUITES PASSED CLEANLY!")
+    print(" ALL 7 SUITES PASSED CLEANLY!")
     print("=" * 60 + "\n")

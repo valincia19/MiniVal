@@ -28,18 +28,18 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 def run_info():
     """Tampilkan ringkasan status hardware dan lingkungan AI."""
     print("\n" + "=" * 60)
-    print("⚡ MiniVal System Diagnostics / Diagnostik MiniVal")
+    print(" MiniVal System Diagnostics / Diagnostik MiniVal")
     print("=" * 60)
-    print(f"🐍 Python         : {sys.version.split()[0]}")
-    print(f"🔥 PyTorch        : {torch.__version__}")
+    print(f" Python         : {sys.version.split()[0]}")
+    print(f" PyTorch        : {torch.__version__}")
     cuda_ok = torch.cuda.is_available()
-    print(f"🚀 CUDA Hardware  : {'✅ Aktif' if cuda_ok else '❌ Tidak Aktif (CPU mode)'}")
+    print(f" CUDA Hardware  : {' Aktif' if cuda_ok else ' Tidak Aktif (CPU mode)'}")
     if cuda_ok:
         dev_name = torch.cuda.get_device_name(0)
         vram = torch.cuda.get_device_properties(0).total_memory / (1024**3)
-        print(f"🎮 GPU Device     : {dev_name}")
-        print(f"💾 Total VRAM     : {vram:.2f} GB")
-        print(f"⚡ bfloat16 Ready : {'Ya' if torch.cuda.is_bf16_supported() else 'Tidak (menggunakan float16)'}")
+        print(f" GPU Device     : {dev_name}")
+        print(f" Total VRAM     : {vram:.2f} GB")
+        print(f" bfloat16 Ready : {'Ya' if torch.cuda.is_bf16_supported() else 'Tidak (menggunakan float16)'}")
     print("=" * 60 + "\n")
 
 
@@ -47,11 +47,11 @@ def run_chat(model_path: str = "minival-v1", max_tokens: int = 1024, temp: float
     """Jalankan obrolan interaktif langsung di terminal."""
     full_path = os.path.join(BASE_DIR, model_path) if not os.path.isabs(model_path) else model_path
     if not os.path.exists(full_path):
-        print(f"❌ Folder model tidak ditemukan di: {full_path}")
+        print(f" Folder model tidak ditemukan di: {full_path}")
         return
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(f"\n⏳ Memuat model MiniVal dari '{model_path}' ke {device.upper()}...")
+    print(f"\n Memuat model MiniVal dari '{model_path}' ke {device.upper()}...")
     tokenizer = AutoTokenizer.from_pretrained(full_path)
     model = AutoModelForCausalLM.from_pretrained(full_path, trust_remote_code=True)
     if device == "cuda":
@@ -60,7 +60,7 @@ def run_chat(model_path: str = "minival-v1", max_tokens: int = 1024, temp: float
         model = model.float().eval().to(device)
 
     print("\n" + "=" * 60)
-    print("💬 MiniVal Interactive Chat (Ketik 'exit' untuk keluar)")
+    print(" MiniVal Interactive Chat (Ketik 'exit' untuk keluar)")
     print("=" * 60 + "\n")
 
     streamer = TextStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
@@ -68,19 +68,19 @@ def run_chat(model_path: str = "minival-v1", max_tokens: int = 1024, temp: float
 
     while True:
         try:
-            user_input = input("User 👤: ").strip()
+            user_input = input("User : ").strip()
         except (KeyboardInterrupt, EOFError):
             break
 
         if not user_input or user_input.lower() in ['exit', 'quit', 'keluar']:
-            print("\nSampai jumpa! 👋")
+            print("\nSampai jumpa! ")
             break
 
         history.append({"role": "user", "content": user_input})
         prompt = tokenizer.apply_chat_template(history, tokenize=False, add_generation_prompt=True)
         inputs = tokenizer(prompt, return_tensors="pt").to(device)
 
-        print("\nMiniVal 🤖: ", end="", flush=True)
+        print("\nMiniVal : ", end="", flush=True)
         start_t = time.time()
         with torch.no_grad():
             outputs = model.generate(
@@ -95,7 +95,7 @@ def run_chat(model_path: str = "minival-v1", max_tokens: int = 1024, temp: float
         elapsed = time.time() - start_t
         gen_tokens = len(outputs[0]) - len(inputs.input_ids[0])
         speed = gen_tokens / max(elapsed, 1e-4)
-        print(f"\n[⚡ Kecepatan: {speed:.1f} token/detik | {gen_tokens} token dalam {elapsed:.2f}s]\n")
+        print(f"\n[ Kecepatan: {speed:.1f} token/detik | {gen_tokens} token dalam {elapsed:.2f}s]\n")
 
         response_text = tokenizer.decode(outputs[0][len(inputs.input_ids[0]):], skip_special_tokens=True)
         history.append({"role": "assistant", "content": response_text})
@@ -109,13 +109,13 @@ def run_web(port: int = 8501):
     try:
         proc.wait()
     except KeyboardInterrupt:
-        print("\n🛑 Menghentikan WebUI MiniVal...")
+        print("\n Menghentikan WebUI MiniVal...")
         proc.terminate()
         try:
             proc.wait(timeout=1.0)
         except subprocess.TimeoutExpired:
             proc.kill()
-        print("✅ WebUI berhasil dihentikan.")
+        print(" WebUI berhasil dihentikan.")
 
 
 def run_serve(port: int = 8000, host: str = "127.0.0.1"):
@@ -126,13 +126,13 @@ def run_serve(port: int = 8000, host: str = "127.0.0.1"):
     try:
         proc.wait()
     except KeyboardInterrupt:
-        print("\n🛑 Menghentikan API Server MiniVal...")
+        print("\n Menghentikan API Server MiniVal...")
         proc.terminate()
         try:
             proc.wait(timeout=1.0)
         except subprocess.TimeoutExpired:
             proc.kill()
-        print("✅ API Server berhasil dihentikan.")
+        print(" API Server berhasil dihentikan.")
 
 
 def run_convert(args):
@@ -200,9 +200,9 @@ def _auto_train_config(data_path: str, args) -> dict:
         "n_samples": n_samples,
     }
 
-    print(f"\n🧠 Auto-Config MiniVal (dataset: {n_samples:,} sampel | device: {device.upper()})")
+    print(f"\n Auto-Config MiniVal (dataset: {n_samples:,} sampel | device: {device.upper()})")
     print(f"   preset={out['preset']} | batch={out['batch_size']} | seq_len={out['max_seq_len']} | epochs={out['epochs']}")
-    print(f"   → Estimasi steps: {n_samples // out['batch_size'] * out['epochs']:,}\n")
+    print(f"   -> Estimasi steps: {n_samples // out['batch_size'] * out['epochs']:,}\n")
     return out
 
 
@@ -227,14 +227,14 @@ def run_train(args):
     )
 
     if args.stage == "tokenizer":
-        print(f"⏳ Melatih BPE Tokenizer dari korpus: {args.data}...")
+        print(f" Melatih BPE Tokenizer dari korpus: {args.data}...")
         from tokenizers import ByteLevelBPETokenizer
         tok = ByteLevelBPETokenizer()
         tok.train(files=[args.data], vocab_size=6400, min_frequency=2,
                   special_tokens=["<|endoftext|>", "<|im_start|>", "<|im_end|>"])
         save_path = os.path.join(BASE_DIR, "model")
         tok.save_model(save_path)
-        print(f"✅ Tokenizer berhasil disimpan di: {save_path}")
+        print(f" Tokenizer berhasil disimpan di: {save_path}")
         return
 
     tokenizer_path = os.path.join(BASE_DIR, "model")
@@ -245,12 +245,12 @@ def run_train(args):
     if args.resume != "none" and os.path.exists(args.resume):
         weights = torch.load(args.resume, map_location="cpu", weights_only=True)
         model.load_state_dict(weights, strict=False)
-        print(f"✅ Memuat bobot dasar dari: {args.resume}")
+        print(f" Memuat bobot dasar dari: {args.resume}")
 
     # Peringatan ramah CPU
     device = "cuda" if torch.cuda.is_available() else "cpu"
     if device == "cpu" and (args.max_samples is None or args.max_samples > 1000):
-        print("💡 [Saran Mode CPU]: Training di CPU tanpa GPU akan lambat jika sampel terlalu banyak.")
+        print(" [Saran Mode CPU]: Training di CPU tanpa GPU akan lambat jika sampel terlalu banyak.")
         print("   Tips: Tambahkan '--max_samples 500 --preset tiny --batch_size 2 --max_seq_len 256'")
         print("   agar proses cepat selesai dan PC tetap adem serta tidak ngefreeze!\n")
 
@@ -268,9 +268,9 @@ def run_train(args):
         trainer.fit_grpo(dataset, num_generations=args.num_generations)
     elif args.stage == "distill":
         if not args.teacher:
-            print("❌ Stage 'distill' memerlukan argumen --teacher <path/name teacher model>")
+            print(" Stage 'distill' memerlukan argumen --teacher <path/name teacher model>")
             return
-        print(f"⏳ Memuat teacher model dari: {args.teacher}...")
+        print(f" Memuat teacher model dari: {args.teacher}...")
         teacher = AutoModelForCausalLM.from_pretrained(args.teacher, trust_remote_code=True)
         trainer.fit_distill(dataset, teacher)
     else:

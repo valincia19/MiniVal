@@ -28,9 +28,7 @@ from config import TrainConfig
 from model import apply_lora, save_lora
 
 
-# ─────────────────────────────────────────────────────────────
 # Helper Loss & Optimizer
-# ─────────────────────────────────────────────────────────────
 
 def dpo_loss_fn(
     ref_log_probs: torch.Tensor,
@@ -64,7 +62,7 @@ def build_optimizer(
     """
     Bangun AdamW dengan pemisahan parameter weight decay.
     Standar LLM: parameter 1D (RMSNorm weights, bias) TIDAK di-decay.
-    fused=True (CUDA) → 1 kernel per step, jauh lebih cepat.
+    fused=True (CUDA) -> 1 kernel per step, jauh lebih cepat.
     """
     decay_params = []
     nodecay_params = []
@@ -85,9 +83,7 @@ def build_optimizer(
     return optim.AdamW(param_groups, lr=lr, betas=betas, eps=1e-8, fused=fused)
 
 
-# ─────────────────────────────────────────────────────────────
 # MiniValTrainer
-# ─────────────────────────────────────────────────────────────
 
 class MiniValTrainer:
     """
@@ -113,7 +109,7 @@ class MiniValTrainer:
             total_cores = os.cpu_count() or 4
             safe_threads = max(1, min(4, total_cores // 2))
             torch.set_num_threads(safe_threads)
-            print(f"❄️ Mode CPU Terdeteksi: Dibatasi ke {safe_threads} threads (dari {total_cores} cores) agar PC tetap adem & responsif.")
+            print(f" Mode CPU Terdeteksi: Dibatasi ke {safe_threads} threads (dari {total_cores} cores) agar PC tetap adem & responsif.")
 
         self.model.to(self.device)
         if self.ref_model:
@@ -121,7 +117,7 @@ class MiniValTrainer:
 
         is_cuda = "cuda" in self.device
 
-        # Pad token resolved sekali — `or` salah karena pad id bisa 0 (0 falsy → fallback)
+        # Pad token resolved sekali - `or` salah karena pad id bisa 0 (0 falsy -> fallback)
         self.pad_id = getattr(self.tokenizer, "pad_token_id", None)
         if self.pad_id is None:
             self.pad_id = getattr(self.tokenizer, "eos_token_id", None) or 0
@@ -142,7 +138,7 @@ class MiniValTrainer:
             fused=is_cuda,
         )
 
-        # Precision context — tentukan dtype dulu
+        # Precision context - tentukan dtype dulu
         if is_cuda:
             use_bf16 = torch.cuda.is_bf16_supported()
             dtype = torch.bfloat16 if use_bf16 else torch.float16
@@ -151,7 +147,7 @@ class MiniValTrainer:
             self.autocast_ctx = nullcontext()
             dtype = None
 
-        # Mixed Precision Scaler — bf16 TIDAK butuh scaler (loss scale redundan + overhead)
+        # Mixed Precision Scaler - bf16 TIDAK butuh scaler (loss scale redundan + overhead)
         scaler_enabled = is_cuda and dtype == torch.float16
         if hasattr(torch, "amp") and hasattr(torch.amp, "GradScaler"):
             self.scaler = torch.amp.GradScaler("cuda", enabled=scaler_enabled)
@@ -190,14 +186,14 @@ class MiniValTrainer:
         global_step = 0
 
         trainable_m = sum(p.numel() for p in self.model.parameters() if p.requires_grad) / 1e6
-        print(f"\n⚡ MiniVal Trainer | Stage: [{self.cfg.stage.upper()}] | Samples: {len(dataset)} | Trainable: {trainable_m:.2f}M | Device: {self.device}")
-        print("─" * 75)
+        print(f"\n MiniVal Trainer | Stage: [{self.cfg.stage.upper()}] | Samples: {len(dataset)} | Trainable: {trainable_m:.2f}M | Device: {self.device}")
+        print("-" * 75)
 
         self.model.train()
         try:
             for epoch in range(self.cfg.epochs):
                 start_time = time.time()
-                # Akumulasi di GPU tensor — hindari sync .item() per-step
+                # Akumulasi di GPU tensor - hindari sync .item() per-step
                 accum_loss = torch.zeros((), device=self.device)
                 tokens_gpu = torch.zeros((), device=self.device, dtype=torch.int64)
 
@@ -234,7 +230,7 @@ class MiniValTrainer:
                         self.scaler.update()
                         self.optimizer.zero_grad(set_to_none=True)
 
-                    # Log progress — satu-satunya titik sync GPU
+                    # Log progress - satu-satunya titik sync GPU
                     if step % self.cfg.log_every == 0 or step == len(loader):
                         elapsed = time.time() - start_time
                         tokens_processed = tokens_gpu.item()
@@ -266,10 +262,10 @@ class MiniValTrainer:
 
                 self.save_checkpoint(f"{self.cfg.stage}_epoch{epoch+1}")
 
-            print(f"\n✅ Training [{self.cfg.stage.upper()}] selesai dengan sukses!")
+            print(f"\n Training [{self.cfg.stage.upper()}] selesai dengan sukses!")
 
         except KeyboardInterrupt:
-            print("\n⚠️ Interupsi terdeteksi! Menyimpan checkpoint pengaman...")
+            print("\n Interupsi terdeteksi! Menyimpan checkpoint pengaman...")
             self.save_checkpoint(f"{self.cfg.stage}_interrupted")
 
     def fit_dpo(self, dataset):
@@ -284,8 +280,8 @@ class MiniValTrainer:
         global_step = 0
         beta = 0.1
 
-        print(f"\n⚡ MiniVal DPO Alignment | Pairs: {len(dataset)} | Device: {self.device}")
-        print("─" * 75)
+        print(f"\n MiniVal DPO Alignment | Pairs: {len(dataset)} | Device: {self.device}")
+        print("-" * 75)
 
         self.model.train()
         try:
@@ -323,9 +319,9 @@ class MiniValTrainer:
                         print(f"[DPO] Ep [{epoch+1}/{self.cfg.epochs}] ({step}/{len(loader)}) | Loss: {loss.item():.4f} | LR: {lr:.2e}")
 
                 self.save_checkpoint(f"dpo_epoch{epoch+1}")
-            print("\n✅ DPO Alignment selesai!")
+            print("\n DPO Alignment selesai!")
         except KeyboardInterrupt:
-            print("\n⚠️ Interupsi terdeteksi! Menyimpan checkpoint pengaman...")
+            print("\n Interupsi terdeteksi! Menyimpan checkpoint pengaman...")
             self.save_checkpoint("dpo_interrupted")
 
 
@@ -360,8 +356,8 @@ class MiniValTrainer:
         for p in ref_model.parameters():
             p.requires_grad = False
 
-        print(f"\n⚡ MiniVal GRPO | Samples: {len(dataset)} | G={num_generations} | Device: {self.device}")
-        print("─" * 75)
+        print(f"\n MiniVal GRPO | Samples: {len(dataset)} | G={num_generations} | Device: {self.device}")
+        print("-" * 75)
 
         self.model.train()
         try:
@@ -443,9 +439,9 @@ class MiniValTrainer:
                               f"Avg Reward: {avg_r:.3f} | LR: {lr:.2e}")
 
                 self.save_checkpoint(f"grpo_epoch{epoch+1}")
-            print("\n✅ GRPO Training selesai!")
+            print("\n GRPO Training selesai!")
         except KeyboardInterrupt:
-            print("\n⚠️ Interupsi! Menyimpan checkpoint...")
+            print("\n Interupsi! Menyimpan checkpoint...")
             self.save_checkpoint("grpo_interrupted")
 
     def fit_distill(self, dataset, teacher_model, temperature: float = 2.0):
@@ -467,8 +463,8 @@ class MiniValTrainer:
         for p in teacher_model.parameters():
             p.requires_grad = False
 
-        print(f"\n⚡ MiniVal Distillation | Samples: {len(dataset)} | T={temperature} | Device: {self.device}")
-        print("─" * 75)
+        print(f"\n MiniVal Distillation | Samples: {len(dataset)} | T={temperature} | Device: {self.device}")
+        print("-" * 75)
 
         self.model.train()
         try:
@@ -518,9 +514,9 @@ class MiniValTrainer:
                               f"Loss: {accum_loss/step:.4f} | {tokens/max(elapsed,1e-4):,.0f} tok/s | LR: {lr:.2e}")
 
                 self.save_checkpoint(f"distill_epoch{epoch+1}")
-            print("\n✅ Distillation selesai!")
+            print("\n Distillation selesai!")
         except KeyboardInterrupt:
-            print("\n⚠️ Interupsi! Menyimpan checkpoint...")
+            print("\n Interupsi! Menyimpan checkpoint...")
             self.save_checkpoint("distill_interrupted")
 
     def save_checkpoint(self, name: str):
@@ -531,5 +527,5 @@ class MiniValTrainer:
         else:
             raw = getattr(self.model, "_orig_mod", self.model)
             torch.save({k: v.cpu() for k, v in raw.state_dict().items()}, save_path)
-        print(f"💾 Checkpoint tersimpan: {save_path}")
+        print(f" Checkpoint tersimpan: {save_path}")
 

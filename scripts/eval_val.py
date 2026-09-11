@@ -42,10 +42,10 @@ def run_eval(
     max_tokens: int = 256,
 ):
     print("\n" + "=" * 65)
-    print("🔬 MiniVal Quantitative Benchmark Suite")
+    print(" MiniVal Quantitative Benchmark Suite")
     print("=" * 65)
-    print(f"📦 Model Path : {model_path}")
-    print(f"🚀 Device     : {device.upper()}")
+    print(f" Model Path : {model_path}")
+    print(f" Device     : {device.upper()}")
 
     # Muat model
     start_load = time.time()
@@ -64,9 +64,9 @@ def run_eval(
     else:
         model = model.float().eval().to(device)
 
-    print(f"⏱️ Waktu Muat : {time.time() - start_load:.2f} detik")
+    print(f" Waktu Muat : {time.time() - start_load:.2f} detik")
     param_count = sum(p.numel() for p in model.parameters()) / 1e6
-    print(f"📊 Parameter  : {param_count:.2f}M")
+    print(f" Parameter  : {param_count:.2f}M")
     print("=" * 65 + "\n")
 
     total_tokens = 0
@@ -109,12 +109,12 @@ def run_eval(
         print(f"[{i}/{len(BENCHMARK_PROMPTS)}] Prompt: \"{test['content'][:45]}...\"")
         print(f"     -> Generated: {gen_len} tokens | Speed: {speed:.1f} tok/s | Time: {elapsed:.2f}s")
         if has_think:
-            print("     -> 🧠 Reasoning tag <think> detected!")
+            print("     ->  Reasoning tag <think> detected!")
         print()
 
     avg_speed = total_tokens / max(total_time, 1e-4)
     print("=" * 65)
-    print(f"🏆 HASIL BENCHMARK:")
+    print(f" HASIL BENCHMARK:")
     print(f"   Total Token Dihasilkan : {total_tokens}")
     print(f"   Total Waktu Inferensi  : {total_time:.2f} detik")
     print(f"   Rata-rata Throughput   : {avg_speed:.1f} token/detik")

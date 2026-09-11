@@ -43,8 +43,8 @@ PARAMETER top_p 0.9
 """
     with open(modelfile_path, "w", encoding="utf-8") as f:
         f.write(content)
-    print(f"📄 Modelfile Ollama dibuat di: {modelfile_path}")
-    print(f"👉 Jalankan di Ollama dengan:")
+    print(f" Modelfile Ollama dibuat di: {modelfile_path}")
+    print(f" Jalankan di Ollama dengan:")
     print(f"   cd {out_dir}")
     print(f"   ollama create minival -f Modelfile")
     print(f"   ollama run minival")
@@ -52,11 +52,11 @@ PARAMETER top_p 0.9
 
 def export_to_gguf(model_dir: str, output_path: str, quant_type: str = "q4_k_m"):
     print("\n" + "=" * 65)
-    print("🦙 MiniVal GGUF Exporter (Ollama / LM Studio / llama.cpp)")
+    print(" MiniVal GGUF Exporter (Ollama / LM Studio / llama.cpp)")
     print("=" * 65)
 
     if not os.path.exists(model_dir):
-        print(f"❌ Folder model tidak ditemukan: {model_dir}")
+        print(f" Folder model tidak ditemukan: {model_dir}")
         return
 
     out_folder = os.path.dirname(output_path) or "."
@@ -76,7 +76,7 @@ def export_to_gguf(model_dir: str, output_path: str, quant_type: str = "q4_k_m")
             break
 
     if not convert_script:
-        print("\n💡 Script 'convert_hf_to_gguf.py' dari llama.cpp belum ditemukan.")
+        print("\n Script 'convert_hf_to_gguf.py' dari llama.cpp belum ditemukan.")
         print("   Cara setup mudah:")
         print("   1. git clone https://github.com/ggerganov/llama.cpp")
         print("   2. pip install -r llama.cpp/requirements.txt")
@@ -93,14 +93,14 @@ def export_to_gguf(model_dir: str, output_path: str, quant_type: str = "q4_k_m")
         "--outfile", output_path,
         "--outtype", quant_type,
     ]
-    print(f"⏳ Menjalankan konversi: {' '.join(cmd)}")
+    print(f" Menjalankan konversi: {' '.join(cmd)}")
     result = subprocess.run(cmd)
 
     if result.returncode == 0:
-        print(f"\n✅ Berhasil diexport ke GGUF: {output_path}")
+        print(f"\n Berhasil diexport ke GGUF: {output_path}")
         generate_ollama_modelfile(os.path.basename(output_path), out_folder)
     else:
-        print("\n❌ Gagal saat menjalankan konversi llama.cpp.")
+        print("\n Gagal saat menjalankan konversi llama.cpp.")
 
 
 def main():

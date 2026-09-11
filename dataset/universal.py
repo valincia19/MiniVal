@@ -98,7 +98,7 @@ class UniversalDataset(Dataset):
         bos_id = getattr(self.tokenizer, "bos_token_id", None) or 1
         eos_id = getattr(self.tokenizer, "eos_token_id", None) or 2
 
-        # Panjang variabel — pad ditangani PadCollate per-batch
+        # Panjang variabel - pad ditangani PadCollate per-batch
         tokens = [bos_id] + tokens + [eos_id]
         input_ids = tokens[: self.max_length]
         labels = list(input_ids)

@@ -32,9 +32,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, TextStreamer
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-# ─────────────────────────────────────────────────────────────
 # State & Resource Management
-# ─────────────────────────────────────────────────────────────
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 MODEL_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "minival-v1"))
@@ -46,20 +44,18 @@ _tokenizer = None
 def get_model_and_tokenizer():
     global _model, _tokenizer
     if _model is None:
-        print(f"⏳ Memuat model dari: {MODEL_PATH} ({DEVICE})...")
+        print(f" Memuat model dari: {MODEL_PATH} ({DEVICE})...")
         _tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, trust_remote_code=True)
         raw_model = AutoModelForCausalLM.from_pretrained(MODEL_PATH, trust_remote_code=True)
         if DEVICE == "cuda":
             _model = raw_model.half().eval().to(DEVICE)
         else:
             _model = raw_model.float().eval().to(DEVICE)
-        print("✅ Model siap melayani permintaan API!")
+        print(" Model siap melayani permintaan API!")
     return _model, _tokenizer
 
 
-# ─────────────────────────────────────────────────────────────
 # Pydantic Schemas (OpenAI-compatible)
-# ─────────────────────────────────────────────────────────────
 
 security_scheme = HTTPBearer(auto_error=False)
 
@@ -108,9 +104,7 @@ class QueueStreamer(TextStreamer):
             self.queue.put(None)
 
 
-# ─────────────────────────────────────────────────────────────
 # Factory Pattern: create_app()
-# ─────────────────────────────────────────────────────────────
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

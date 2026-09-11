@@ -16,13 +16,13 @@ from model import MiniValConfig, MiniValForCausalLM
 
 def convert_pth_to_hf(pth_path: str, output_dir: str, preset: str = "base"):
     if not os.path.exists(pth_path):
-        print(f"❌ File {pth_path} tidak ditemukan!")
+        print(f" File {pth_path} tidak ditemukan!")
         return
 
     os.makedirs(output_dir, exist_ok=True)
     config = ModelPresets.get(preset)
 
-    print(f"⏳ Mengonversi {pth_path} ke format HuggingFace...")
+    print(f" Mengonversi {pth_path} ke format HuggingFace...")
     model = MiniValForCausalLM(config)
     state_dict = torch.load(pth_path, map_location="cpu", weights_only=True)
     model.load_state_dict(state_dict, strict=False)
@@ -54,7 +54,7 @@ def convert_pth_to_hf(pth_path: str, output_dir: str, preset: str = "base"):
         with open(cfg_json_path, "w", encoding="utf-8") as f:
             json.dump(cfg_data, f, indent=2)
 
-    print(f"✅ Berhasil dikonversi ke: {output_dir}")
+    print(f" Berhasil dikonversi ke: {output_dir}")
 
 
 def main():
