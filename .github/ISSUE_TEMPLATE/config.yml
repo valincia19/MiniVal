@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: MiniVal Discussions & Questions
+    url: https://github.com/valincia19/MiniVal/discussions
+    about: Ask general questions, discuss LLM training ideas, or share community models/datasets.
+  - name: Security Vulnerability Reporting
+    url: https://github.com/valincia19/MiniVal/security/advisories/new
+    about: Privately report a security vulnerability or exploit.

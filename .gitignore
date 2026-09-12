@@ -1,12 +1,24 @@
-# Environments
+# Environments & Secrets
 .venv/
 venv/
 env/
+.env
+.env.*
+*.env
 
 # Python
 __pycache__/
 *.py[cod]
 *.egg-info/
+build/
+dist/
+
+# Testing & Linting
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
 
 # Model Checkpoints & Large Weights
 out/
@@ -27,3 +39,7 @@ dataset/*.jsonl
 .idea/
 .DS_Store
 Thumbs.db
+*.swp
+*.swo
+*~
+
