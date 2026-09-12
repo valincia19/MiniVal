@@ -143,19 +143,22 @@ docs(readme): clarify CPU training flags
 
 ## Pull Request Workflow
 
-1. **Keep Pull Requests Focused**: A PR should address one specific problem or feature. Avoid bundling unrelated refactors or formatting changes.
-2. **Sync with Main**: Keep your branch up to date with `origin/main` before opening a PR:
+1. **Branch Off `dev`**: Always branch from `dev` (`git checkout -b feat/your-feature origin/dev`).
+2. **Keep Pull Requests Focused**: A PR should address one specific problem or feature. Avoid bundling unrelated refactors or formatting changes.
+3. **Sync with `origin/dev`**: Keep your branch up to date with `origin/dev` before opening a PR:
    ```bash
    git fetch origin
-   git rebase origin/main
+   git rebase origin/dev
    ```
-3. **Run Tests Locally**: Ensure `python test_verification.py` passes cleanly.
-4. **Do Not Commit Large Weights or Datasets**:
+4. **Run Tests Locally**: Ensure `python test_verification.py` passes cleanly.
+5. **Do Not Commit Large Weights or Datasets**:
    - Model weights (`*.safetensors`, `*.pth`, `*.bin`, `*.gguf`) and large dataset files (`*.jsonl`, `*.txt`) belong in `.gitignore`.
    - Never commit binaries or credentials to git history.
-5. **Open a Pull Request**:
+6. **Open a Pull Request Targeting `dev`**:
+   - Set the PR base branch to **`dev`** (the `main` branch is reserved for stable tagged releases).
    - Use the provided [Pull Request Template](.github/PULL_REQUEST_TEMPLATE.md).
    - Describe the motivation, changes made, and testing proof.
+
 
 ---
 

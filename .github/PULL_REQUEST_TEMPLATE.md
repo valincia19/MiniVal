@@ -23,9 +23,11 @@
 
 ## Checklist
 
+- [ ] This PR targets the `dev` branch (not `main`).
 - [ ] I ran `python test_verification.py` locally and all test suites passed cleanly.
 - [ ] Existing model architecture, training dynamics, and CLI commands remain functionally intact.
 - [ ] No model weight files (`*.safetensors`, `*.pth`, `*.pt`, `*.bin`, `*.gguf`) or dataset files are included in this PR.
 - [ ] Code follows PEP 8 conventions and existing naming standards.
 - [ ] Documentation / comments have been added or updated where necessary.
 - [ ] This PR contains only focused, relevant changes (no unrelated refactors).
+
