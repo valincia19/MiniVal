@@ -13,6 +13,7 @@ Fitur:
 """
 from __future__ import annotations
 
+import json
 import math
 import os
 import time
@@ -441,8 +442,127 @@ class MiniValTrainer:
                 self.save_checkpoint(f"grpo_epoch{epoch+1}")
             print("\n GRPO Training selesai!")
         except KeyboardInterrupt:
-            print("\n Interupsi! Menyimpan checkpoint...")
+            print("\n[!] Interupsi! Menyimpan checkpoint...")
             self.save_checkpoint("grpo_interrupted")
+
+    def fit_agent(self, dataset, num_generations: int = 8, max_new_tokens: int = 128):
+        """
+        Stage AGENT: tool-calling RL (REINFORCE dengan baseline group ala GRPO).
+        Reward = kesesuaian nama tool call yang di-generate vs gt dataset.
+        """
+        from rollout import RolloutEngine
+        import re as _re
+        # Pattern tool call: <tool_call>{json}</tool_call> — ganti dari gabungan biar aman editor
+        _open = chr(60) + "tool_call" + chr(62)
+        _close = chr(60) + "/tool_call" + chr(62)
+        _rx = _re.escape(_open) + r"([\s\S]*?)" + _re.escape(_close)
+        tag_pattern = _re.compile(_rx)
+
+        def agent_collate(batch):  # dataset agent -> dict of lists, tanpa stack tensor
+            return {k: [s[k] for s in batch] for k in batch[0]}
+
+        loader = DataLoader(dataset, batch_size=self.cfg.batch_size, shuffle=True, drop_last=True,
+                            collate_fn=agent_collate)
+        total_steps = self.cfg.epochs * len(loader)
+        global_step = 0
+        G = num_generations
+
+        rollout_engine = RolloutEngine(self.model, self.tokenizer, self.device, self.autocast_ctx)
+
+        print(f"\n MiniVal Agent RL | Samples: {len(dataset)} | G={G} | Device: {self.device}")
+        print("-" * 75)
+
+        self.model.train()
+        try:
+            for epoch in range(self.cfg.epochs):
+                for step, batch in enumerate(loader, 1):
+                    global_step += 1
+                    lr = self._get_lr(global_step, total_steps)
+                    for g_ in self.optimizer.param_groups:
+                        g_["lr"] = lr
+
+                    # Encode prompt per row (chat template + tools) lalu stack kanan
+                    texts = []
+                    for msgs, tools in zip(batch["messages"], batch["tools"]):
+                        texts.append(self.tokenizer.apply_chat_template(
+                            msgs, tools=tools, tokenize=False, add_generation_prompt=True))
+                    enc = [self.tokenizer(t, add_special_tokens=False).input_ids for t in texts]
+
+                    width = max(len(e) for e in enc)
+                    pad_id = self.pad_id
+                    prompt_ids = torch.full((len(enc), width), pad_id, dtype=torch.long)
+                    attn = torch.zeros((len(enc), width), dtype=torch.long)
+                    for i, e in enumerate(enc):
+                        prompt_ids[i, : len(e)] = torch.tensor(e, dtype=torch.long)
+                        attn[i, : len(e)] = 1
+
+                    # 1. Rollout (prompt len beda -> engine geser pad ke kiri otomatis)
+                    result = rollout_engine.rollout(prompt_ids, attn, num_generations=G,
+                                                    max_new_tokens=max_new_tokens)
+
+                    # 2. Reward dari nama tool call yang ter-parse
+                    completions = result.completions
+                    rewards = torch.zeros(len(completions), device=self.device)
+                    gt_fn = [gt[0] if gt else None for gt in batch["gt"]]
+                    gt_fn = [g_ for g_ in gt_fn for _ in range(G)]
+                    for i, text in enumerate(completions):
+                        names, malformed = [], 0
+                        for m in tag_pattern.findall(text):
+                            try:
+                                j = json.loads(m)
+                                if isinstance(j, dict) and "name" in j:
+                                    names.append(j["name"])
+                                else:
+                                    malformed += 1
+                            except Exception:
+                                malformed += 1
+                        expect = gt_fn[i]
+                        if expect is None:
+                            # Tanpa tool: reward 1 kalau tidak memanggil apa pun
+                            rewards[i] = 1.0 if not names else 0.0
+                            if malformed:
+                                rewards[i] -= 0.25
+                        else:
+                            if malformed:
+                                rewards[i] -= 0.25
+                            if names:
+                                hit = sum(1 for n in names if n == expect)
+                                rewards[i] += 0.5 * (hit == len(names))  # semua call benar
+                                if len(names) == 1 and names[0] == expect:
+                                    rewards[i] += 0.5
+
+                    # 3. Advantage per group
+                    B = len(batch["messages"])
+                    grouped = rewards.view(B, G)
+                    mean_r = grouped.mean(1).repeat_interleave(G)
+                    std_r = grouped.std(1, unbiased=False).repeat_interleave(G)
+                    advantages = (rewards - mean_r) / (std_r + 1e-4)
+
+                    # 4. Policy-gradient loss
+                    from rollout import compute_per_token_logps
+                    R = result.completion_ids.size(1)
+                    pi_logp = compute_per_token_logps(self.model, result.output_ids, n_keep=R)
+                    mask = result.completion_mask.to(self.device)
+                    per_seq = ((pi_logp * mask).sum(1) / mask.sum(1).clamp(min=1))
+                    loss = -(advantages * per_seq).mean()
+
+                    self.scaler.scale(loss).backward()
+                    if global_step % self.cfg.grad_accum_steps == 0:
+                        self.scaler.unscale_(self.optimizer)
+                        torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.cfg.grad_clip)
+                        self.scaler.step(self.optimizer)
+                        self.scaler.update()
+                        self.optimizer.zero_grad(set_to_none=True)
+
+                    if step % self.cfg.log_every == 0 or step == len(loader):
+                        print(f"[AGENT] Ep [{epoch+1}/{self.cfg.epochs}] ({step}/{len(loader)}) | "
+                              f"Loss: {loss.item():.4f} | Avg Reward: {rewards.mean().item():.3f} | LR: {lr:.2e}")
+
+                self.save_checkpoint(f"agent_epoch{epoch+1}")
+            print("\n Training [AGENT] selesai!")
+        except KeyboardInterrupt:
+            print("\n[!] Interupsi! Menyimpan checkpoint...")
+            self.save_checkpoint("agent_interrupted")
 
     def fit_distill(self, dataset, teacher_model, temperature: float = 2.0):
         """

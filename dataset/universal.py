@@ -75,6 +75,8 @@ class UniversalDataset(Dataset):
         first = self.samples[0]
         if "chosen" in first and "rejected" in first:
             self.data_type = "dpo"
+        elif "messages" in first and "tools" in first and "gt" in first:
+            self.data_type = "agent"
         elif "conversations" in first:
             self.data_type = "sft"
         else:
@@ -178,6 +180,15 @@ class UniversalDataset(Dataset):
 
     def __getitem__(self, index: int):
         sample = self.samples[index]
+        if self.data_type == "agent":
+            # Interpretasi tools: bisa bentuk string JSON atau list langsung
+            tools = sample.get("tools", [])
+            if isinstance(tools, str):
+                try:
+                    tools = json.loads(tools)
+                except json.JSONDecodeError:
+                    tools = []
+            return {"messages": sample["messages"], "tools": tools, "gt": sample.get("gt", [])}
         if self.data_type == "dpo":
             return self._encode_dpo(sample["chosen"], sample["rejected"])
         if self.data_type == "sft":

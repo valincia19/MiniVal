@@ -43,7 +43,7 @@ def run_info():
     print("=" * 60 + "\n")
 
 
-def run_chat(model_path: str = "minival-v1", max_tokens: int = 1024, temp: float = 0.85):
+def run_chat(model_path: str = "minival-v1", max_tokens: int = 1024, temp: float = 0.85, context: int = 0):
     """Jalankan obrolan interaktif langsung di terminal."""
     full_path = os.path.join(BASE_DIR, model_path) if not os.path.isabs(model_path) else model_path
     if not os.path.exists(full_path):
@@ -54,6 +54,10 @@ def run_chat(model_path: str = "minival-v1", max_tokens: int = 1024, temp: float
     print(f"\n Memuat model MiniVal dari '{model_path}' ke {device.upper()}...")
     tokenizer = AutoTokenizer.from_pretrained(full_path)
     model = AutoModelForCausalLM.from_pretrained(full_path, trust_remote_code=True)
+    if context:
+        from model.model_minival import enable_long_context
+        enable_long_context(model, context)
+        print(f" Long context aktif: {model.config.max_position_embeddings} token (YaRN)")
     if device == "cuda":
         model = model.half().eval().to(device)
     else:
@@ -266,6 +270,8 @@ def run_train(args):
         trainer.fit_dpo(dataset)
     elif args.stage == "grpo":
         trainer.fit_grpo(dataset, num_generations=args.num_generations, max_new_tokens=args.max_new_tokens)
+    elif args.stage == "agent":
+        trainer.fit_agent(dataset, num_generations=args.num_generations, max_new_tokens=args.max_new_tokens)
     elif args.stage == "distill":
         if not args.teacher:
             print(" Stage 'distill' memerlukan argumen --teacher <path/name teacher model>")
@@ -292,6 +298,7 @@ def main():
     p_chat.add_argument("--model", default="minival-v1", help="Folder path model (default: minival-v1)")
     p_chat.add_argument("--max_tokens", default=1024, type=int)
     p_chat.add_argument("--temperature", default=0.85, type=float)
+    p_chat.add_argument("--context", default=0, type=int, help="Panjang konteks maksimum (mis. 8192). >2048 aktifkan YaRN.")
 
     # web
     p_web = subparsers.add_parser("web", help="Buka antarmuka chat berbasis browser (Streamlit)")
@@ -319,7 +326,8 @@ def main():
 
     # train
     p_train = subparsers.add_parser("train", help="Latih model (Pretrain, SFT, LoRA, DPO, GRPO, Distill, Tokenizer)")
-    p_train.add_argument("stage", choices=["pretrain", "sft", "lora", "dpo", "grpo", "distill", "tokenizer"], help="Tahap pelatihan")
+    p_train.add_argument("stage", choices=["pretrain", "sft", "lora", "dpo", "grpo", "agent", "distill", "tokenizer"], 
+help="Tahap pelatihan")
     p_train.add_argument("--data", required=True, help="Path ke file dataset (.txt atau .jsonl)")
     p_train.add_argument("--preset", default="base", choices=["tiny", "base", "pro", "moe"], help="Ukuran model")
     p_train.add_argument("--epochs", default=2, type=int)
@@ -338,7 +346,7 @@ def main():
     if args.command == "info":
         run_info()
     elif args.command == "chat":
-        run_chat(args.model, args.max_tokens, args.temperature)
+        run_chat(args.model, args.max_tokens, args.temperature, getattr(args, "context", 0))
     elif args.command == "web":
         run_web(args.port)
     elif args.command == "serve":

@@ -101,8 +101,8 @@ class RolloutEngine:
 
         with self._ctx:
             output_ids = raw.generate(
-                input_ids=rep_ids,
-                attention_mask=rep_mask,
+                input_ids=rep_ids.to(self.device),
+                attention_mask=rep_mask.to(self.device),
                 max_new_tokens=max_new_tokens,
                 do_sample=True,
                 temperature=temperature,

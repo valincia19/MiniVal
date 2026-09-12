@@ -195,10 +195,23 @@ class RotaryEmbedding(nn.Module):
         )
 
 
+def enable_long_context(model: "MiniValForCausalLM", context: int):
+    """Aktifkan YaRN + perpanjang RoPE table saat runtime (mis. chat --context 8192)."""
+    context = int(context)
+    if context <= 0:
+        return
+    cfg = model.config
+    cfg.max_position_embeddings = max(context, cfg.max_position_embeddings)
+    if cfg.max_position_embeddings / 2048.0 > 1.0:
+        cfg.inference_rope_scaling = True
+    cfg.rope_scaling = _yarn_config() if getattr(cfg, "inference_rope_scaling", False) else None
+    device = next(model.parameters()).device
+    model.model.rotary_emb = RotaryEmbedding(cfg).to(device)
+
+
 def _rotate_half(x: torch.Tensor) -> torch.Tensor:
     half = x.shape[-1] // 2
     return torch.cat([-x[..., half:], x[..., :half]], dim=-1)
-
 
 def apply_rotary_emb(
     q: torch.Tensor,

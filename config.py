@@ -127,6 +127,6 @@ class TrainConfig:
     save_every: int = 200
 
     def __post_init__(self):
-        valid_stages = {"pretrain", "sft", "lora", "dpo", "grpo", "distill"}
+        valid_stages = {"pretrain", "sft", "lora", "dpo", "grpo", "agent", "distill"}
         if self.stage not in valid_stages:
             raise ValueError(f"stage harus salah satu dari {valid_stages}, bukan '{self.stage}'")
