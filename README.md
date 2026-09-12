@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/valincia19/MiniVal/actions/workflows/ci.yml/badge.svg)](https://github.com/valincia19/MiniVal/actions/workflows/ci.yml)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+
 
 Proyek iseng belajar bikin LLM dari nol.
 
@@ -173,10 +175,10 @@ Kontribusi selalu disambut hangat! Silakan baca panduan berikut sebelum berkontr
 ---
 
 ## Lisensi (License)
-
+ 
+MiniVal dirilis di bawah lisensi open-source [Apache License 2.0](LICENSE).
 Hak cipta (c) 2026 valincia19 dan kontributor MiniVal.
 
-*(Catatan Maintainer: Lisensi formal open source seperti **Apache 2.0** atau **MIT** dapat dipilih dan ditentukan oleh pemilik repositori pada berkas `LICENSE`).*
 
 ---
 
