@@ -488,7 +488,7 @@ class MiniValForCausalLM(PreTrainedModel, GenerationMixin):
     MiniVal Causal Language Model - siap untuk Pretraining, SFT, dan Inferensi.
     """
     config_class = MiniValConfig
-    _tied_weights_keys = ["lm_head.weight", "model.embed_tokens.weight"]
+    _tied_weights_keys = {"lm_head.weight": "model.embed_tokens.weight"}
 
     def __init__(self, config: MiniValConfig):
         super().__init__(config)
